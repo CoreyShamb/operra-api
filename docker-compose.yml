@@ -1,0 +1,12 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - operra_data:/var/lib/postgresql/data
+
+volumes:
+  operra_data:
