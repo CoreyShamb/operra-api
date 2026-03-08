@@ -1,9 +1,15 @@
 import express from "express";
 import bodyParser from "body-parser";
+import routes from "./routes";
 import { stripeWebhook } from "./modules/payments/webhook.handler";
-import authRoutes from "./modules/auth/auth.routes";
 
 const app = express();
+
+app.post(
+  "/api/webhook",
+  bodyParser.raw({ type: "application/json" }),
+  stripeWebhook
+);
 
 app.use(express.json());
 
@@ -14,12 +20,6 @@ app.get("/", (_req, res) => {
   });
 });
 
-app.use("/auth", authRoutes);
-
-app.post(
-  "/api/webhook",
-  bodyParser.raw({ type: "application/json" }),
-  stripeWebhook
-);
+app.use(routes);
 
 export default app;
