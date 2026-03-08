@@ -7,28 +7,38 @@ datasource db {
 }
 
 model Organization {
-  id              String         @id @default(cuid())
-  name            String
-  subscription    Subscription?
+  id           String        @id @default(cuid())
+  name         String
+  subscription Subscription?
 
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }
 
 model Subscription {
-  id                   String   @id @default(cuid())
-  organizationId       String   @unique
-  stripeCustomerId     String   @unique
-  stripeSubscriptionId String   @unique
+  id                   String       @id @default(cuid())
+  organizationId       String       @unique
+  stripeCustomerId     String       @unique
+  stripeSubscriptionId String       @unique
   stripePriceId        String
   planKey              String
   status               String
   currentPeriodEnd     DateTime?
-  cancelAtPeriodEnd    Boolean  @default(false)
+  cancelAtPeriodEnd    Boolean      @default(false)
   trialEndsAt          DateTime?
 
   organization         Organization @relation(fields: [organizationId], references: [id])
 
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  passwordHash  String
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }

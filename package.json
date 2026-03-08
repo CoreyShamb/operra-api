@@ -26,15 +26,18 @@
   },
   "homepage": "https://github.com/Ventryx-Technologies/operra-api#readme",
   "dependencies": {
+    "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "pg": "^8.20.0",
     "stripe": "^20.4.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^25.3.3",
+    "@types/pg": "^8.18.0",
     "prisma": "^7.4.2",
     "ts-node-dev": "^2.0.0",
     "tsx": "^4.21.0",

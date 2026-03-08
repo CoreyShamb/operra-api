@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
 import { StripeService } from "./stripe.service";
-import { getPrisma } from "../../lib/prisma";
+import prisma from "../../lib/prisma";
 
-const prisma = getPrisma();
 
 const stripeService = new StripeService();
 
