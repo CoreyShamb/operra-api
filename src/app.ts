@@ -1,6 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import { stripeWebhook } from "./modules/payments/webhook.handler";
+import authRoutes from "./modules/auth/auth.routes";
 
 const app = express();
 
@@ -12,6 +13,8 @@ app.get("/", (_req, res) => {
     message: "Operra API is running",
   });
 });
+
+app.use("/auth", authRoutes);
 
 app.post(
   "/api/webhook",
