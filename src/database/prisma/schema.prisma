@@ -6,29 +6,69 @@ datasource db {
   provider = "postgresql"
 }
 
-model Organization {
-  id              String         @id @default(cuid())
-  name            String
-  subscription    Subscription?
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
 
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  memberships Membership[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Organization {
+  id   String @id @default(uuid())
+  name String
+
+  memberships Membership[]
+  apiKeys     ApiKey[]
+  subscription Subscription?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Membership {
+  id             String @id @default(uuid())
+  role           String
+
+  userId         String
+  organizationId String
+
+  user           User         @relation(fields: [userId], references: [id])
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model ApiKey {
+  id             String   @id @default(uuid())
+  key            String   @unique
+  organizationId String
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
 }
 
 model Subscription {
-  id                   String   @id @default(cuid())
+  id                   String   @id @default(uuid())
   organizationId       String   @unique
   stripeCustomerId     String   @unique
   stripeSubscriptionId String   @unique
   stripePriceId        String
+
   planKey              String
   status               String
+
   currentPeriodEnd     DateTime?
-  cancelAtPeriodEnd    Boolean  @default(false)
+  cancelAtPeriodEnd    Boolean @default(false)
   trialEndsAt          DateTime?
 
-  organization         Organization @relation(fields: [organizationId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
 
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
