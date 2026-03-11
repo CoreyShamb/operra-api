@@ -7,94 +7,64 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String?
-
+  id          String       @id @default(uuid())
+  email       String       @unique
+  name        String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  password    String
   memberships Membership[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model Organization {
-  id   String @id @default(uuid())
-  name String
-
-  memberships Membership[]
-  apiKeys     ApiKey[]
+  id           String        @id @default(uuid())
+  name         String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  apiKeys      ApiKey[]
+  memberships  Membership[]
   subscription Subscription?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model Membership {
-  id             String @id @default(uuid())
-  role           String
-
+  id             String       @id @default(uuid())
   userId         String
   organizationId String
+  role           String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user           User         @relation(fields: [userId], references: [id])
-  organization   Organization @relation(fields: [organizationId], references: [id])
-
-  createdAt DateTime @default(now())
+  @@unique([userId, organizationId])
 }
 
 model ApiKey {
-  id             String   @id @default(uuid())
-  key            String   @unique
+  id             String       @id @default(uuid())
   organizationId String
-
-  organization   Organization @relation(fields: [organizationId], references: [id])
-
-  createdAt DateTime @default(now())
+  name           String
+  keyHash        String       @unique
+  lastUsedAt     DateTime?
+  revokedAt      DateTime?
+  createdAt      DateTime     @default(now())
+  expiresAt      DateTime?
+  prefix         String
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 }
 
 model Subscription {
-  id                   String   @id @default(uuid())
-  organizationId       String   @unique
-  stripeCustomerId     String   @unique
-  stripeSubscriptionId String   @unique
+  id                   String       @id @default(uuid())
+  organizationId       String       @unique
+  stripeCustomerId     String       @unique
+  stripeSubscriptionId String       @unique
   stripePriceId        String
-
   planKey              String
   status               String
-
   currentPeriodEnd     DateTime?
-  cancelAtPeriodEnd    Boolean @default(false)
+  cancelAtPeriodEnd    Boolean      @default(false)
   trialEndsAt          DateTime?
-
-  organization Organization @relation(fields: [organizationId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Membership {
-  id             String   @id @default(cuid())
-  userId         String
-  organizationId String
-  role           String
-  createdAt      DateTime @default(now())
-
-  user         User         @relation(fields: [userId], references: [id])
-  organization Organization @relation(fields: [organizationId], references: [id])
-}
-
-model ApiKey {
-  id             String   @id @default(cuid())
-  organizationId String
-  name           String
-  prefix         String
-  keyHash        String   @unique
-  lastUsedAt     DateTime?
-  revokedAt      DateTime?
-  expiresAt      DateTime?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+  organization         Organization @relation(fields: [organizationId], references: [id])
 }

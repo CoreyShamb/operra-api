@@ -23,7 +23,7 @@ export class AuthService {
             data: {
                 email,
                 name,
-                passwordHash,
+                password: passwordHash,
             },
             select: {
                 id: true,
@@ -45,7 +45,7 @@ export class AuthService {
             throw new Error("Invalid email or password");
         }
 
-        const passwordMatches = await bcrypt.compare(password, user.passwordHash);
+        const passwordMatches = await bcrypt.compare(password, user.password);
 
         if (!passwordMatches) {
             throw new Error("Invalid email or password");

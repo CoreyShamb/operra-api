@@ -1,17 +1,21 @@
-export interface ApiKeyAuthContext {
-    apiKeyId: string;
-    organizationId: string;
-    keyPrefix: string;
-}
+import "express";
 
 declare global {
     namespace Express {
         interface Request {
-            user?: {
-                userId: string;
-                email: string;
+            organization?: {
+                id: string;
+                name: string;
+                createdAt: Date;
+                updatedAt: Date;
             };
-            apiKeyAuth?: ApiKeyAuthContext;
+            apiKey?: {
+                id: string;
+                prefix: string;
+                organizationId: string;
+            };
         }
     }
 }
+
+export { };

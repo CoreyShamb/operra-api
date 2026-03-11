@@ -1,60 +1,88 @@
-import crypto from "crypto";
-import prisma from "../../lib/prisma";
+// src/modules/api-keys/api-key.service.ts
+import { prisma } from "../../lib/prisma";
+import { generateApiKey, hashApiKey } from "../../core/utils/api-key";
 
-export class ApiKeysService {
-    async createApiKey(organizationId: string, name: string) {
-        const rawKey = `op_live_${crypto.randomBytes(24).toString("hex")}`;
-        const keyPrefix = rawKey.slice(0, 12);
-        const keyHash = crypto.createHash("sha256").update(rawKey).digest("hex");
+export async function createApiKey(params: {
+    organizationId: string;
+    name: string;
+    expiresAt?: Date;
+}) {
+    const { organizationId, name, expiresAt } = params;
 
-        const apiKey = await prisma.apiKey.create({
-            data: {
-                organizationId,
-                name,
-                keyPrefix,
-                keyHash,
-            },
-            select: {
-                id: true,
-                name: true,
-                keyPrefix: true,
-                createdAt: true,
-            },
-        });
+    const { rawKey, prefix, keyHash } = generateApiKey();
 
-        return {
-            apiKey,
-            rawKey,
-        };
-    }
+    const apiKey = await prisma.apiKey.create({
+        data: {
+            organizationId,
+            name,
+            prefix,
+            keyHash,
+            expiresAt,
+        },
+        select: {
+            id: true,
+            organizationId: true,
+            name: true,
+            prefix: true,
+            createdAt: true,
+            expiresAt: true,
+            revokedAt: true,
+        },
+    });
 
-    async getOrganizationApiKeys(organizationId: string) {
-        return prisma.apiKey.findMany({
-            where: {
-                organizationId,
-                revokedAt: null,
-            },
-            select: {
-                id: true,
-                name: true,
-                keyPrefix: true,
-                lastUsedAt: true,
-                createdAt: true,
-            },
-            orderBy: {
-                createdAt: "desc",
-            },
-        });
-    }
+    return {
+        apiKey,
+        rawKey,
+    };
+}
 
-    async revokeApiKey(apiKeyId: string, organizationId: string) {
-        return prisma.apiKey.update({
-            where: {
-                id: apiKeyId,
-            },
-            data: {
-                revokedAt: new Date(),
-            },
-        });
-    }
+export async function listApiKeys(organizationId: string) {
+    return prisma.apiKey.findMany({
+        where: { organizationId },
+        orderBy: { createdAt: "desc" },
+        select: {
+            id: true,
+            name: true,
+            prefix: true,
+            createdAt: true,
+            updatedAt: true,
+            expiresAt: true,
+            revokedAt: true,
+            lastUsedAt: true,
+        },
+    });
+}
+
+export async function revokeApiKey(id: string) {
+    return prisma.apiKey.update({
+        where: { id },
+        data: { revokedAt: new Date() },
+        select: {
+            id: true,
+            name: true,
+            revokedAt: true,
+        },
+    });
+}
+
+export async function validateApiKey(rawKey: string) {
+    const keyHash = hashApiKey(rawKey);
+
+    const apiKey = await prisma.apiKey.findUnique({
+        where: { keyHash },
+        include: {
+            organization: true,
+        },
+    });
+
+    if (!apiKey) return null;
+    if (apiKey.revokedAt) return null;
+    if (apiKey.expiresAt && apiKey.expiresAt < new Date()) return null;
+
+    await prisma.apiKey.update({
+        where: { id: apiKey.id },
+        data: { lastUsedAt: new Date() },
+    });
+
+    return apiKey;
 }
