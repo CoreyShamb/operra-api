@@ -41,8 +41,10 @@ export async function apiKeyAuthMiddleware(
             organizationId: apiKey.organizationId,
         };
 
-        next();
+        return next();
     } catch (error) {
+        console.error("[apiKeyAuth] failed:", error);
+
         return res.status(500).json({
             success: false,
             message: error instanceof Error ? error.message : "API key auth failed",

@@ -8,7 +8,7 @@ const router = Router();
 
 router.use("/auth", authRoutes);
 router.use("/api-keys", apiKeysRoutes);
-router.use(apiKeysProtectedRoutes);
+router.use("/api-keys", apiKeysProtectedRoutes);
 router.use("/analytics", usageAnalyticsRoutes);
 
 export default router;

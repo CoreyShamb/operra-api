@@ -18,3 +18,7 @@ export function generateApiKey() {
 export function hashApiKey(rawKey: string) {
     return crypto.createHash("sha256").update(rawKey).digest("hex");
 }
+
+export function looksLikeOperraApiKey(rawKey: string) {
+    return /^op_live_[a-f0-9]{8}\.[a-f0-9]{48}$/i.test(rawKey);
+}

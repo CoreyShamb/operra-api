@@ -1,12 +1,13 @@
-// src/modules/api-keys/api-key.service.ts
 import { prisma } from "../../lib/prisma";
 import { generateApiKey, hashApiKey } from "../../core/utils/api-key";
 
-export async function createApiKey(params: {
+type CreateApiKeyParams = {
     organizationId: string;
     name: string;
     expiresAt?: Date;
-}) {
+};
+
+export async function createApiKey(params: CreateApiKeyParams) {
     const { organizationId, name, expiresAt } = params;
 
     const { rawKey, prefix, keyHash } = generateApiKey();
@@ -75,14 +76,26 @@ export async function validateApiKey(rawKey: string) {
         },
     });
 
-    if (!apiKey) return null;
-    if (apiKey.revokedAt) return null;
-    if (apiKey.expiresAt && apiKey.expiresAt < new Date()) return null;
+    if (!apiKey) {
+        return null;
+    }
 
-    await prisma.apiKey.update({
-        where: { id: apiKey.id },
-        data: { lastUsedAt: new Date() },
-    });
+    if (apiKey.revokedAt) {
+        return null;
+    }
+
+    if (apiKey.expiresAt && apiKey.expiresAt < new Date()) {
+        return null;
+    }
+
+    try {
+        await prisma.apiKey.update({
+            where: { id: apiKey.id },
+            data: { lastUsedAt: new Date() },
+        });
+    } catch (error) {
+        console.error("[validateApiKey] failed to update lastUsedAt", error);
+    }
 
     return apiKey;
 }
