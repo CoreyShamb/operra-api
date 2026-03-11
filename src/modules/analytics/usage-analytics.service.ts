@@ -86,3 +86,107 @@ export async function getUsageAnalytics(organizationId: string) {
         })),
     };
 }
+
+export async function getDailyUsageAnalytics(
+    organizationId: string,
+    days: number = 7
+) {
+    const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+    startDate.setDate(startDate.getDate() - (days - 1));
+
+    const logs = await prisma.apiRequestLog.findMany({
+        where: {
+            organizationId,
+            createdAt: {
+                gte: startDate,
+            },
+        },
+        select: {
+            createdAt: true,
+        },
+        orderBy: {
+            createdAt: "asc",
+        },
+    });
+
+    const countsByDate = new Map<string, number>();
+
+    for (let i = 0; i < days; i++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+        const key = date.toISOString().split("T")[0];
+        countsByDate.set(key, 0);
+    }
+
+    for (const log of logs) {
+        const key = log.createdAt.toISOString().split("T")[0];
+        countsByDate.set(key, (countsByDate.get(key) ?? 0) + 1);
+    }
+
+    return Array.from(countsByDate.entries()).map(([date, count]) => ({
+        date,
+        count,
+    }));
+}
+
+export async function getEndpointDailyUsageAnalytics(
+    organizationId: string,
+    days: number = 7,
+    path?: string
+) {
+    const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+    startDate.setDate(startDate.getDate() - (days - 1));
+
+    const logs = await prisma.apiRequestLog.findMany({
+        where: {
+            organizationId,
+            createdAt: {
+                gte: startDate,
+            },
+            ...(path ? { path } : {}),
+        },
+        select: {
+            createdAt: true,
+            path: true,
+        },
+        orderBy: {
+            createdAt: "asc",
+        },
+    });
+
+    const endpointPaths = path
+        ? [path]
+        : Array.from(new Set(logs.map((log) => log.path)));
+
+    const results: Array<{ date: string; path: string; count: number }> = [];
+
+    for (const endpointPath of endpointPaths) {
+        const countsByDate = new Map<string, number>();
+
+        for (let i = 0; i < days; i++) {
+            const date = new Date(startDate);
+            date.setDate(startDate.getDate() + i);
+            const key = date.toISOString().split("T")[0];
+            countsByDate.set(key, 0);
+        }
+
+        for (const log of logs) {
+            if (log.path !== endpointPath) continue;
+
+            const key = log.createdAt.toISOString().split("T")[0];
+            countsByDate.set(key, (countsByDate.get(key) ?? 0) + 1);
+        }
+
+        for (const [date, count] of Array.from(countsByDate.entries())) {
+            results.push({
+                date,
+                path: endpointPath,
+                count,
+            });
+        }
+    }
+
+    return results;
+}
