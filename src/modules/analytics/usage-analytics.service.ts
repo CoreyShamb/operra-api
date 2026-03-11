@@ -190,3 +190,64 @@ export async function getEndpointDailyUsageAnalytics(
 
     return results;
 }
+
+export async function getStatusCodeDailyAnalytics(
+    organizationId: string,
+    days: number = 7,
+    statusCode?: number
+) {
+    const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+    startDate.setDate(startDate.getDate() - (days - 1));
+
+    const logs = await prisma.apiRequestLog.findMany({
+        where: {
+            organizationId,
+            createdAt: {
+                gte: startDate,
+            },
+            ...(typeof statusCode === "number" ? { statusCode } : {}),
+        },
+        select: {
+            createdAt: true,
+            statusCode: true,
+        },
+        orderBy: {
+            createdAt: "asc",
+        },
+    });
+
+    const statusCodes = typeof statusCode === "number"
+        ? [statusCode]
+        : Array.from(new Set(logs.map((log) => log.statusCode)));
+
+    const results: Array<{ date: string; statusCode: number; count: number }> = [];
+
+    for (const currentStatusCode of statusCodes) {
+        const countsByDate = new Map<string, number>();
+
+        for (let i = 0; i < days; i++) {
+            const date = new Date(startDate);
+            date.setDate(startDate.getDate() + i);
+            const key = date.toISOString().split("T")[0];
+            countsByDate.set(key, 0);
+        }
+
+        for (const log of logs) {
+            if (log.statusCode !== currentStatusCode) continue;
+
+            const key = log.createdAt.toISOString().split("T")[0];
+            countsByDate.set(key, (countsByDate.get(key) ?? 0) + 1);
+        }
+
+        for (const [date, count] of Array.from(countsByDate.entries())) {
+            results.push({
+                date,
+                statusCode: currentStatusCode,
+                count,
+            });
+        }
+    }
+
+    return results;
+}

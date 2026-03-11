@@ -3,6 +3,7 @@ import {
     getUsageAnalytics,
     getDailyUsageAnalytics,
     getEndpointDailyUsageAnalytics,
+    getStatusCodeDailyAnalytics,
 } from "./usage-analytics.service";
 
 export async function getUsageAnalyticsHandler(req: Request, res: Response) {
@@ -101,6 +102,48 @@ export async function getEndpointDailyUsageAnalyticsHandler(
                 error instanceof Error
                     ? error.message
                     : "Failed to fetch endpoint daily usage analytics",
+        });
+    }
+}
+
+export async function getStatusCodeDailyAnalyticsHandler(
+    req: Request,
+    res: Response
+) {
+    try {
+        if (!req.organization) {
+            return res.status(401).json({
+                success: false,
+                message: "Organization context missing",
+            });
+        }
+
+        const daysParam = req.query.days;
+        const statusCodeParam = req.query.statusCode;
+
+        const days =
+            typeof daysParam === "string" ? Math.max(1, Number(daysParam)) : 7;
+
+        const statusCode =
+            typeof statusCodeParam === "string" ? Number(statusCodeParam) : undefined;
+
+        const analytics = await getStatusCodeDailyAnalytics(
+            req.organization.id,
+            days,
+            Number.isFinite(statusCode) ? statusCode : undefined
+        );
+
+        return res.status(200).json({
+            success: true,
+            data: analytics,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "Failed to fetch status code analytics",
         });
     }
 }

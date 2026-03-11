@@ -4,6 +4,7 @@ import {
     getUsageAnalyticsHandler,
     getDailyUsageAnalyticsHandler,
     getEndpointDailyUsageAnalyticsHandler,
+    getStatusCodeDailyAnalyticsHandler,
 } from "./usage-analytics.controller";
 
 const router = Router();
@@ -26,6 +27,12 @@ router.get(
     "/usage/endpoints/daily",
     apiKeyAuthMiddleware,
     getEndpointDailyUsageAnalyticsHandler
+);
+
+router.get(
+    "/status-codes/daily",
+    apiKeyAuthMiddleware,
+    getStatusCodeDailyAnalyticsHandler
 );
 
 export default router;
