@@ -1,14 +1,14 @@
 import express from "express";
-import bodyParser from "body-parser";
 import routes from "./routes";
-import { stripeWebhook } from "./modules/payments/webhook.handler";
+import { stripeWebhook } from "./modules/billing/webhook.controller";
 import { errorMiddleware } from "./core/middleware/error.middleware";
+import billingRoutes from "./modules/billing/billing.routes";
 
 const app = express();
 
 app.post(
-  "/api/webhook",
-  bodyParser.raw({ type: "application/json" }),
+  "/api/v1/billing/webhook",
+  express.raw({ type: "application/json" }),
   stripeWebhook
 );
 
@@ -21,6 +21,7 @@ app.get("/", (_req, res) => {
   });
 });
 
+app.use("/api/v1/billing", billingRoutes);
 app.use(routes);
 app.use(errorMiddleware);
 

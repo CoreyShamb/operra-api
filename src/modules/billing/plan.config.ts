@@ -1,57 +1,38 @@
-export const PLANS = {
-    STARTER: {
-        key: "starter",
-        priceId: process.env.STRIPE_PRICE_STARTER!,
-        staffLimit: 1,
-        bookingLimit: 50,
-        locations: 1,
-        features: {
-            reporting: false,
-            advancedReporting: false,
-            apiAccess: false,
-            multiLocation:false
-        }
-    },
+import { PlanConfig, PlanKey } from "./billing.types";
 
-    GROWTH: {
-        key: "growth",
-        priceId: process.env.STRIPE_PRICE_GROWTH!,
-        staffLimit: 5,
-        bookingLimit: null,
-        locations: 1,
-        features: {
-            rerporting: true,
-            advancedReporting: false,
-            apiAccess: false,
-            multiLocation: false
-        }
-    },
+// PlanKey and PlanConfig are imported from "./billing.types"
 
-    BUSINESS: {
-        key: "business",
-        priceId: process.env.STRIPE_PRICE_BUSINESS!,
-        staffLimit: 15,
-        bookingLimit: null,
-        locations: 1,
-        features: {
-            reporting: true,
-            advancedReporting: true,
-            apiAccess: false,
-            multiLocation: false
-        }
-    },
+export const PLANS: Record<PlanKey, PlanConfig> = {
+  free: {
+    key: "free",
+    name: "Free",
+  },
 
-    PROFESSIONAL: {
-        key: "professional",
-        priceId: process.env.STRIPE_PRICE_PRO!,
-        staffLimit: null,
-        bookingLimit: null,
-        locations: null,
-        features: {
-            reporting: true,
-            advancedReporting: true,
-            apiAccess: true,
-            multiLocation: true
-        }
-    }
-} as const;
+  starter: {
+    key: "starter",
+    name: "Starter",
+    stripePriceId: process.env.STRIPE_PRICE_STARTER,
+  },
+
+  growth: {
+    key: "growth",
+    name: "Growth",
+    stripePriceId: process.env.STRIPE_PRICE_GROWTH,
+  },
+
+  business: {
+    key: "business",
+    name: "Business",
+    stripePriceId: process.env.STRIPE_PRICE_BUSINESS,
+  },
+
+  professional: {
+    key: "professional",
+    name: "Professional",
+    stripePriceId: process.env.STRIPE_PRICE_PROFESSIONAL,
+  },
+};
+
+export function getPlanByKey(planKey: string) {
+  return PLANS[planKey as PlanKey] ?? null;
+}
