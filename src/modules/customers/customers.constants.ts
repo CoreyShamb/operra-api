@@ -1,0 +1,3 @@
+export const CUSTOMER_DEFAULT_PAGE = 1;
+export const CUSTOMER_DEFAULT_LIMIT = 20;
+export const CUSTOMER_MAX_LIMIT = 100;
