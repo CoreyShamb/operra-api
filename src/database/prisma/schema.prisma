@@ -33,6 +33,7 @@ model Organization {
   apiRequestLogs ApiRequestLog[]
   bookings       Booking[]
   customers      Customer[]
+  integrations   Integration[]
 }
 
 model Membership {
@@ -130,4 +131,19 @@ model Customer {
   @@index([organizationId])
   @@index([email])
   @@index([phone])
+}
+
+model Integration {
+  id             String    @id @default(uuid())
+  organizationId String
+  provider       String
+  status         String
+  connectedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, provider])
+  @@index([organizationId])
 }

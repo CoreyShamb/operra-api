@@ -12,6 +12,9 @@ import {
     UpdateBookingInput,
 } from "./bookings.types";
 import { enforceBookingLimits } from "./hooks/enforceBookingLimits";
+import { findCustomerById } from "../customers/customers.repository";
+import { sendMailgunEmail } from "../integrations/mailgun/mailgun.service";
+import { sendWebhook } from "../integrations/webhook/webhook.service";
 
 export async function createBooking(input: CreateBookingInput) {
     await enforceBookingLimits(input.organizationId);
@@ -39,6 +42,59 @@ export async function createBooking(input: CreateBookingInput) {
         endTime,
         status: "pending",
     });
+
+    try {
+        await sendWebhook({
+            url: "https://webhook.site/21a4c18a-53b1-47b1-99c4-ba8e033f50c6",
+            event: "booking.created",
+            payload: {
+                id: booking.id,
+                organizationId: booking.organizationId,
+                customerId: booking.customerId,
+                serviceId: booking.serviceId,
+                title: booking.title,
+                notes: booking.notes,
+                status: booking.status,
+                startTime: booking.startTime,
+                endTime: booking.endTime,
+                createdAt: booking.createdAt,
+                updatedAt: booking.updatedAt,
+            },
+        });
+    } catch (error) {
+        console.error("[Bookings] Failed to send booking.created webhook:", error);
+    }
+
+    if (booking.customerId) {
+        try {
+            const customer = await findCustomerById(booking.customerId);
+
+            if (customer?.email) {
+                await sendMailgunEmail({
+                    to: customer.email,
+                    subject: "Booking Confirmation",
+                    text: [
+                        `Hello ${customer.firstName},`,
+                        "",
+                        `Your booking "${booking.title}" has been created successfully.`,
+                        `Start: ${booking.startTime.toISOString()}`,
+                        `End: ${booking.endTime.toISOString()}`,
+                        booking.notes ? `Notes: ${booking.notes}` : "",
+                        "",
+                        "Thank you,",
+                        "Operra",
+                    ]
+                        .filter(Boolean)
+                        .join("\n"),
+                });
+            }
+        } catch (error) {
+            console.error(
+                "[Bookings] Failed to send booking confirmation email:",
+                error
+            );
+        }
+    }
 
     return booking;
 }
@@ -80,7 +136,9 @@ export async function updateBooking(id: string, input: UpdateBookingInput) {
     });
 
     if (conflictingBooking) {
-        throw new Error("Updated booking conflicts with an existing scheduled booking");
+        throw new Error(
+            "Updated booking conflicts with an existing scheduled booking"
+        );
     }
 
     const updatedBooking = await updateBookingRecord(id, {
