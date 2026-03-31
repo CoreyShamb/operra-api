@@ -31,6 +31,7 @@ model Organization {
   memberships    Membership[]
   subscription   Subscription?
   apiRequestLogs ApiRequestLog[]
+  bookings       Booking[]
 }
 
 model Membership {
@@ -90,4 +91,24 @@ model ApiRequestLog {
   @@index([organizationId])
   @@index([apiKeyId])
   @@index([createdAt])
+}
+
+model Booking {
+  id             String   @id @default(uuid())
+  organizationId String
+  customerId     String?
+  serviceId      String?
+  title          String
+  notes          String?
+  status         String   @default("pending")
+  startTime      DateTime
+  endTime        DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([startTime])
+  @@index([status])
 }

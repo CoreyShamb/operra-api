@@ -3,6 +3,7 @@ import routes from "./routes";
 import { stripeWebhook } from "./modules/billing/webhook.controller";
 import { errorMiddleware } from "./core/middleware/error.middleware";
 import billingRoutes from "./modules/billing/billing.routes";
+import bookingRoutes from "./modules/bookings/bookings.routes";
 
 const app = express();
 
@@ -22,6 +23,8 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api/v1/billing", billingRoutes);
+app.use("/api/v1/bookings", bookingRoutes); // ✅ ADD THIS
+
 app.use(routes);
 app.use(errorMiddleware);
 

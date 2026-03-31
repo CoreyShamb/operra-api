@@ -1,38 +1,117 @@
-import { PlanConfig, PlanKey } from "./billing.types";
+export type PlanFeatureFlags = {
+  reporting: boolean;
+  advancedReporting: boolean;
+  apiAccess: boolean;
+  multiLocation: boolean;
+};
 
-// PlanKey and PlanConfig are imported from "./billing.types"
+export type PlanConfig = {
+  key: PlanKey;
+  stripePriceId: string | null;
+  isFree: boolean;
+  staffLimit: number | null;
+  bookingLimit: number | null;
+  locations: number | null;
+  features: PlanFeatureFlags;
+};
 
-export const PLANS: Record<PlanKey, PlanConfig> = {
-  free: {
+export type PlanKey =
+  | "free"
+  | "starter"
+  | "growth"
+  | "business"
+  | "professional";
+
+export const PLANS: Record<string, PlanConfig> = {
+  FREE: {
     key: "free",
-    name: "Free",
+    stripePriceId: null,
+    isFree: true,
+    staffLimit: 1,
+    bookingLimit: 10,
+    locations: 1,
+    features: {
+      reporting: false,
+      advancedReporting: false,
+      apiAccess: false,
+      multiLocation: false,
+    },
   },
 
-  starter: {
+  STARTER: {
     key: "starter",
-    name: "Starter",
-    stripePriceId: process.env.STRIPE_PRICE_STARTER,
+    stripePriceId: process.env.STRIPE_PRICE_STARTER ?? null,
+    isFree: false,
+    staffLimit: 1,
+    bookingLimit: 50,
+    locations: 1,
+    features: {
+      reporting: false,
+      advancedReporting: false,
+      apiAccess: false,
+      multiLocation: false,
+    },
   },
 
-  growth: {
+  GROWTH: {
     key: "growth",
-    name: "Growth",
-    stripePriceId: process.env.STRIPE_PRICE_GROWTH,
+    stripePriceId: process.env.STRIPE_PRICE_GROWTH ?? null,
+    isFree: false,
+    staffLimit: 5,
+    bookingLimit: null,
+    locations: 1,
+    features: {
+      reporting: true,
+      advancedReporting: false,
+      apiAccess: false,
+      multiLocation: false,
+    },
   },
 
-  business: {
+  BUSINESS: {
     key: "business",
-    name: "Business",
-    stripePriceId: process.env.STRIPE_PRICE_BUSINESS,
+    stripePriceId: process.env.STRIPE_PRICE_BUSINESS ?? null,
+    isFree: false,
+    staffLimit: 15,
+    bookingLimit: null,
+    locations: 1,
+    features: {
+      reporting: true,
+      advancedReporting: true,
+      apiAccess: false,
+      multiLocation: false,
+    },
   },
 
-  professional: {
+  PROFESSIONAL: {
     key: "professional",
-    name: "Professional",
-    stripePriceId: process.env.STRIPE_PRICE_PROFESSIONAL,
+    stripePriceId: process.env.STRIPE_PRICE_PRO ?? null,
+    isFree: false,
+    staffLimit: null,
+    bookingLimit: null,
+    locations: null,
+    features: {
+      reporting: true,
+      advancedReporting: true,
+      apiAccess: true,
+      multiLocation: true,
+    },
   },
 };
 
-export function getPlanByKey(planKey: string) {
-  return PLANS[planKey as PlanKey] ?? null;
+export function getPlanByKey(planKey: string): PlanConfig | null {
+  const normalizedKey = planKey.trim().toLowerCase();
+
+  const plan = Object.values(PLANS).find((item) => item.key === normalizedKey);
+
+  return plan ?? null;
+}
+
+export function getAllPlans(): PlanConfig[] {
+  return Object.values(PLANS);
+}
+
+export function isPaidPlan(planKey: string): boolean {
+  const plan = getPlanByKey(planKey);
+  return !!plan && !plan.isFree;
 }

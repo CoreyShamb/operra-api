@@ -1,13 +1,10 @@
 import { prisma } from "../../lib/prisma";
 import {
-    createStripeCheckoutSession,
     createStripeBillingPortalSession,
+    createStripeCheckoutSession,
 } from "./stripe.service";
 import { getPlanByKey } from "./plan.config";
-import {
-    OrganizationSubscription,
-    PlanKey,
-} from "./billing.types";
+import { PlanKey } from "./plan.config";
 
 export async function getOrganizationSubscription(organizationId: string) {
     const organization = await prisma.organization.findUnique({
@@ -32,7 +29,9 @@ type CreateCheckoutSessionParams = {
     planKey: PlanKey;
 };
 
-export async function createCheckoutSession(params: CreateCheckoutSessionParams) {
+export async function createCheckoutSession(
+    params: CreateCheckoutSessionParams
+) {
     const { organizationId, planKey } = params;
 
     const organization = await prisma.organization.findUnique({
@@ -54,8 +53,12 @@ export async function createCheckoutSession(params: CreateCheckoutSessionParams)
         throw new Error("Invalid plan selected");
     }
 
+    if (plan.isFree) {
+        throw new Error("Free plan does not require checkout");
+    }
+
     if (!plan.stripePriceId) {
-        throw new Error("Plan is missing Stripe price ID");
+        throw new Error(`Stripe price ID is missing for plan: ${plan.key}`);
     }
 
     const session = await createStripeCheckoutSession({
