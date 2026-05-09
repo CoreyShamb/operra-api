@@ -147,3 +147,23 @@ model Integration {
   @@unique([organizationId, provider])
   @@index([organizationId])
 }
+
+model AiRequestLog {
+  id           String   @id @default(cuid())
+  orgId        String
+  userId       String?
+  apiKeyId     String?
+  modelId      String
+  endpoint     String
+  promptTokens Int?
+  outputTokens Int?
+  costCents    Int?
+  statusCode   Int
+  createdAt    DateTime @default(now())
+
+  @@index([orgId])
+  @@index([userId])
+  @@index([apiKeyId])
+  @@index([modelId])
+  @@index([createdAt])
+}

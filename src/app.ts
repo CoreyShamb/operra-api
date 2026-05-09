@@ -11,6 +11,8 @@ import mailgunRoutes from "./modules/integrations/mailgun/mailgun.routes";
 import twilioRoutes from "./modules/integrations/twilio/twilio.routes";
 import stripeRoutes from "./modules/integrations/stripe/stripe.routes";
 import webhookRoutes from "./modules/integrations/webhook/webhook.routes";
+import aiRoutes from "./modules/ai/ai.routes";
+
 
 const app = express();
 
@@ -29,6 +31,7 @@ app.get("/", (_req, res) => {
   });
 });
 
+app.use("/api/v1", routes);
 app.use("/api/v1/billing", billingRoutes);
 app.use("/api/v1/bookings", bookingRoutes);
 app.use("/api/v1/customers", customerRoutes);
@@ -38,6 +41,7 @@ app.use("/api/v1/integrations/mailgun", mailgunRoutes);
 app.use("/api/v1/integrations/twilio", twilioRoutes);
 app.use("/api/v1/integrations/stripe", stripeRoutes);
 app.use("/api/v1/integrations/webhook", webhookRoutes);
+app.use("/api/v1/ai", aiRoutes);
 app.use(errorMiddleware);
 
 export default app;
