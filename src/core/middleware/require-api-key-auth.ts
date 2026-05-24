@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { prisma } from "../../database/prisma";
+import { prisma } from "../../lib/prisma";
 import { hashApiKey, looksLikeOperraApiKey } from "../utils/api-key";
 
 export async function requireApiKeyAuth(

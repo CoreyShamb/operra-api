@@ -1,9 +1,14 @@
 import { Request, Response } from "express";
 import {
-    getUsageAnalytics,
+    dailyUsageQuerySchema,
+    endpointDailyUsageQuerySchema,
+    statusCodeDailyQuerySchema,
+} from "./usage-analytics.schemas";
+import {
     getDailyUsageAnalytics,
     getEndpointDailyUsageAnalytics,
     getStatusCodeDailyAnalytics,
+    getUsageAnalytics,
 } from "./usage-analytics.service";
 
 export async function getUsageAnalyticsHandler(req: Request, res: Response) {
@@ -32,10 +37,7 @@ export async function getUsageAnalyticsHandler(req: Request, res: Response) {
     }
 }
 
-export async function getDailyUsageAnalyticsHandler(
-    req: Request,
-    res: Response
-) {
+export async function getDailyUsageAnalyticsHandler(req: Request, res: Response) {
     try {
         if (!req.organization) {
             return res.status(401).json({
@@ -44,10 +46,7 @@ export async function getDailyUsageAnalyticsHandler(
             });
         }
 
-        const daysParam = req.query.days;
-        const days =
-            typeof daysParam === "string" ? Math.max(1, Number(daysParam)) : 7;
-
+        const { days } = dailyUsageQuerySchema.parse(req.query);
         const analytics = await getDailyUsageAnalytics(req.organization.id, days);
 
         return res.status(200).json({
@@ -65,10 +64,7 @@ export async function getDailyUsageAnalyticsHandler(
     }
 }
 
-export async function getEndpointDailyUsageAnalyticsHandler(
-    req: Request,
-    res: Response
-) {
+export async function getEndpointDailyUsageAnalyticsHandler(req: Request, res: Response) {
     try {
         if (!req.organization) {
             return res.status(401).json({
@@ -77,14 +73,7 @@ export async function getEndpointDailyUsageAnalyticsHandler(
             });
         }
 
-        const daysParam = req.query.days;
-        const pathParam = req.query.path;
-
-        const days =
-            typeof daysParam === "string" ? Math.max(1, Number(daysParam)) : 7;
-
-        const path = typeof pathParam === "string" ? pathParam : undefined;
-
+        const { days, path } = endpointDailyUsageQuerySchema.parse(req.query);
         const analytics = await getEndpointDailyUsageAnalytics(
             req.organization.id,
             days,
@@ -106,10 +95,7 @@ export async function getEndpointDailyUsageAnalyticsHandler(
     }
 }
 
-export async function getStatusCodeDailyAnalyticsHandler(
-    req: Request,
-    res: Response
-) {
+export async function getStatusCodeDailyAnalyticsHandler(req: Request, res: Response) {
     try {
         if (!req.organization) {
             return res.status(401).json({
@@ -118,19 +104,11 @@ export async function getStatusCodeDailyAnalyticsHandler(
             });
         }
 
-        const daysParam = req.query.days;
-        const statusCodeParam = req.query.statusCode;
-
-        const days =
-            typeof daysParam === "string" ? Math.max(1, Number(daysParam)) : 7;
-
-        const statusCode =
-            typeof statusCodeParam === "string" ? Number(statusCodeParam) : undefined;
-
+        const { days, statusCode } = statusCodeDailyQuerySchema.parse(req.query);
         const analytics = await getStatusCodeDailyAnalytics(
             req.organization.id,
             days,
-            Number.isFinite(statusCode) ? statusCode : undefined
+            statusCode
         );
 
         return res.status(200).json({

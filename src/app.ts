@@ -2,7 +2,6 @@ import express from "express";
 import routes from "./routes";
 import { stripeWebhook } from "./modules/billing/webhook.controller";
 import { errorMiddleware } from "./core/middleware/error.middleware";
-import billingRoutes from "./modules/billing/billing.routes";
 import bookingRoutes from "./modules/bookings/bookings.routes";
 import customerRoutes from "./modules/customers/customers.routes";
 import healthRoutes from "./modules/health/health.routes";
@@ -12,7 +11,6 @@ import twilioRoutes from "./modules/integrations/twilio/twilio.routes";
 import stripeRoutes from "./modules/integrations/stripe/stripe.routes";
 import webhookRoutes from "./modules/integrations/webhook/webhook.routes";
 import aiRoutes from "./modules/ai/ai.routes";
-
 
 const app = express();
 
@@ -32,7 +30,6 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api/v1", routes);
-app.use("/api/v1/billing", billingRoutes);
 app.use("/api/v1/bookings", bookingRoutes);
 app.use("/api/v1/customers", customerRoutes);
 app.use("/api/v1/health", healthRoutes);

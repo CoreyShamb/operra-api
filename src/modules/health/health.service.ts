@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import { redisClient } from "../../config/redis";
+import { redis } from "../../lib/redis";
 import {
     HealthCheckResponse,
     ReadinessCheckResponse,
@@ -37,10 +37,8 @@ export async function getReadinessStatus(): Promise<ReadinessCheckResponse> {
     }
 
     try {
-        if (redisClient) {
-            await redisClient.ping();
-            redisStatus = "up";
-        }
+        await redis.ping();
+        redisStatus = "up";
     } catch {
         redisStatus = "down";
     }

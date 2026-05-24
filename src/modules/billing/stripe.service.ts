@@ -1,16 +1,10 @@
 import Stripe from "stripe";
 import {
-  CreateBillingPortalSessionParams,
+    CreateBillingPortalSessionParams,
+    CreateStripeCheckoutSessionParams,
 } from "./billing.types";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
-
-type CreateStripeCheckoutSessionParams = {
-    organizationId: string;
-    organizationName: string;
-    stripeCustomerId?: string;
-    priceId: string;
-};
 
 export async function createStripeCheckoutSession(
     params: CreateStripeCheckoutSessionParams
@@ -42,12 +36,8 @@ export async function createStripeCheckoutSession(
     return session;
 }
 
-type CreateStripeBillingPortalSessionParams = {
-    customerId: string;
-};
-
 export async function createStripeBillingPortalSession(
-    params: CreateStripeBillingPortalSessionParams
+    params: CreateBillingPortalSessionParams
 ) {
     const session = await stripe.billingPortal.sessions.create({
         customer: params.customerId,
