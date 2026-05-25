@@ -1,0 +1,29 @@
+# Staging overlay — run with:
+#   docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d
+#
+# Uses the pre-built GHCR image instead of a local build.
+# Connects to real Azure infra via .env.staging (no local db/redis).
+
+services:
+  api:
+    image: ghcr.io/ventryx-technologies/operra-api:latest
+    env_file:
+      - .env.staging
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: null   # Must be set in .env.staging
+      REDIS_URL: null      # Must be set in .env.staging
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  db:
+    profiles:
+      - local-only   # Excluded from staging; use Azure PostgreSQL
+
+  redis:
+    profiles:
+      - local-only   # Excluded from staging; use Azure Cache for Redis

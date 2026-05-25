@@ -1,19 +1,83 @@
 services:
-  db:
-    image: postgres:15
+  api:
+    build: .
+    image: ghcr.io/ventryx-technologies/operra-api:latest
+    container_name: operra-api
+    env_file:
+      - .env
     environment:
+      NODE_ENV: production
+      # Override to use local services in dev — remove these when pointing at real infra
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/operra
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - /nodejs/bin/node
+        - -e
+        - >-
+          require('http').get('http://localhost:3000/api/v1/health/live',
+          (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: operra
     ports:
       - "5433:5432"
     volumes:
       - operra_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d operra"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
 
   redis:
-    image: redis:7
+    image: redis:7-alpine
+    command: redis-server --save 60 1 --loglevel warning
     ports:
       - "6379:6379"
     volumes:
       - operra_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
 
 volumes:
   operra_data:
