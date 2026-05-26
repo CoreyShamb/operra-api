@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import routes from "./routes";
 import { stripeWebhook } from "./modules/billing/webhook.controller";
 import { errorMiddleware } from "./core/middleware/error.middleware";
@@ -13,6 +14,13 @@ import webhookRoutes from "./modules/integrations/webhook/webhook.routes";
 import aiRoutes from "./modules/ai/ai.routes";
 
 const app = express();
+
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "http://localhost:3001"],
+    credentials: true,
+  })
+);
 
 app.post(
   "/api/v1/billing/webhook",
