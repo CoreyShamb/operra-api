@@ -7,13 +7,14 @@ datasource db {
 }
 
 model User {
-  id          String       @id @default(uuid())
-  email       String       @unique
-  name        String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  password    String
-  memberships Membership[]
+  id             String          @id @default(uuid())
+  email          String          @unique
+  name           String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  password       String
+  memberships    Membership[]
+  watchlistItems WatchlistItem[]
 }
 
 model Organization {
@@ -166,4 +167,15 @@ model AiRequestLog {
   @@index([apiKeyId])
   @@index([modelId])
   @@index([createdAt])
+}
+
+model WatchlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  symbol    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, symbol])
 }
