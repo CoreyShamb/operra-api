@@ -9,6 +9,8 @@ import notificationsRoutes from "./modules/notifications/notifications.routes";
 import membershipsRoutes from "./modules/memberships/memberships.routes";
 import usersRoutes from "./modules/users/users.routes";
 import organizationsRoutes from "./modules/organizations/organizations.routes";
+import stocksRoutes from "./modules/stocks/stocks.routes";
+import watchlistRoutes from "./modules/watchlist/watchlist.routes";
 
 const router = Router();
 
@@ -22,5 +24,7 @@ router.use("/billing", billingRoutes);
 router.use("/payments", paymentsRoutes);
 router.use("/notifications", notificationsRoutes);
 router.use("/memberships", membershipsRoutes);
+router.use("/stocks", stocksRoutes);
+router.use("/watchlist", watchlistRoutes);
 
 export default router;
