@@ -343,4 +343,9 @@ docker compose \
 
 ## License
 
-Private internal software owned by Ventryx Technologies LLC.
+Copyright © 2026 Ventryx Technologies LLC
+
+All rights reserved.
+
+This software and associated documentation files are proprietary and confidential.
+Unauthorized copying, modification, distribution, or use is prohibited.
